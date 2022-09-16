@@ -21,7 +21,7 @@ class CommandTests(SimpleTestCase):
         self.assertEqual(patched_conn.call_count, 1)
 
     @patch('time.sleep', return_value=True)
-    def test_wait_for_db(self, patched_conn):
+    def test_wait_for_db(self, patched_time, patched_conn):
         patched_conn.side_effect = [Psycopg2Error] * 5 \
             + [OperationalError] * 5 + [True]
         call_command('wait_for_db')
