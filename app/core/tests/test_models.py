@@ -15,3 +15,4 @@ class RecipeTests(TestCase):
         recipe = Recipe.objects.create(name=name)
 
         self.assertEqual(recipe.name, name)
+        self.assertEqual(str(recipe), name)
