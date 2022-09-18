@@ -19,7 +19,7 @@ class RecipeAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def retrieve_recipes(self):
+    def test_retrieve_recipes(self):
         """Test retrieve all recipes from REST API."""
         Recipe.objects.create(name='Salad')
         Recipe.objects.create(name='Sauce')
