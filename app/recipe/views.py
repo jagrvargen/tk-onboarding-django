@@ -36,7 +36,3 @@ class IngredientViewSet(mixins.DestroyModelMixin,
     def get_queryset(self):
         """Fetch ingredients."""
         return self.queryset.order_by('-name')
-
-    def perform_create(self, serializer):
-        """Create a new recipe."""
-        serializer.save()
