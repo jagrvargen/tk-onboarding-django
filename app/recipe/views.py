@@ -14,4 +14,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Fetch all recipes."""
+        name = self.request.query_params.get('name')
+        if name:
+            return self.queryset.filter(name=name)
+
         return self.queryset.order_by('-id')
