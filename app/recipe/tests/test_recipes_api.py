@@ -51,4 +51,13 @@ class RecipeAPITests(TestCase):
 
     def test_create_recipe(self):
         """Test create a recipe with POST request."""
-        pass
+        payload = {
+            'name': 'Single Pancake',
+            'description': 'Just one single pancake',
+        }
+        res = self.client.post(RECIPES_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipe = Recipe.objects.get(id=res.data['id'])
+        for k, v in payload.items():
+            self.assertEqual(getattr(recipe, k), v)
