@@ -7,15 +7,25 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Recipe
+from core.models import Recipe, Ingredient
 from recipe.serializers import RecipeSerializer
 
 RECIPES_URL = reverse('recipe:recipe-list')
 
 
-def create_recipe(name):
+def create_recipe(**params):
     """Create a sample recipe."""
-    return Recipe.objects.create(name=name)
+    defaults = {
+        'name': 'Test recipe name',
+        'description': 'Test recipe description',
+    }
+    defaults.update(params)
+    return Recipe.objects.create(**defaults)
+
+
+def create_ingredient(name):
+    """Create a sample ingredient."""
+    return Ingredient.objects.create(name=name)
 
 
 class RecipeAPITests(TestCase):
@@ -26,8 +36,10 @@ class RecipeAPITests(TestCase):
 
     def test_retrieve_recipes(self):
         """Test retrieve all recipes."""
-        create_recipe('Salad')
-        create_recipe('Sauce')
+        recipe1 = {'name': 'Salad'}
+        recipe2 = {'name': 'Sauce'}
+        create_recipe(**recipe1)
+        create_recipe(**recipe2)
 
         res = self.client.get(RECIPES_URL)
         recipes = Recipe.objects.all().order_by('-id')
@@ -38,8 +50,10 @@ class RecipeAPITests(TestCase):
 
     def test_retrieve_recipe_by_name(self):
         """Test retrieve specific recipe by name."""
-        create_recipe('Sausage')
-        create_recipe('Sandwich')
+        recipe1 = {'name': 'Sausage'}
+        recipe2 = {'name': 'Sandwich'}
+        create_recipe(**recipe1)
+        create_recipe(**recipe2)
 
         res = self.client.get(RECIPES_URL, {'name': 'Sausage'})
         recipe = Recipe.objects.filter(name='Sausage')
@@ -61,3 +75,29 @@ class RecipeAPITests(TestCase):
         recipe = Recipe.objects.get(id=res.data['id'])
         for k, v in payload.items():
             self.assertEqual(getattr(recipe, k), v)
+
+    def test_create_recipe_with_ingredient(self):
+        """Test create a recipe with an ingredient."""
+        payload = {
+            'name': 'Delicious Soup',
+            'description': 'Hot Soup',
+            'ingredients': [{'name': 'Salt'}, {'name': 'Water'}]
+        }
+        res = self.client.post(RECIPES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        print(f"RES CONTAINS {res.data}")
+
+    # def test_create_recipe_with_ingredients(self):
+    #     """Test create a recipe with ingredients."""
+    #     payload = {
+    #         'name': 'Soup',
+    #         'description': 'A most delicious soup',
+    #         'ingredients': [{'name': 'Water'}, {'name': 'Salt'}],
+    #     }
+    #     res = self.client.post(RECIPES_URL, payload)
+    #     check = self.client.get(INGREDIENTS_URL)
+    #     print(f"CHECK INGREDIENTS {check.data}")
+    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+    #     print(f"RES CONTAINS ~~~~> {res.data}")
+    #     self.assertIn('Water', res.data['ingredients'].values())
