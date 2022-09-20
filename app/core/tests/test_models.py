@@ -23,7 +23,8 @@ class ModelTests(TestCase):
         recipe = Recipe.objects.create(name=recipe_name)
 
         ingredient_name = 'Salt'
-        ingredient = Ingredient.objects.create(name=ingredient_name, recipe=recipe)
+        ingredient = Ingredient.objects.create(name=ingredient_name,
+                                               recipe=recipe)
 
         self.assertEqual(ingredient.name, ingredient_name)
         self.assertEqual(str(ingredient), ingredient_name)

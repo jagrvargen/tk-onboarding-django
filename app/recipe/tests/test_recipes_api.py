@@ -23,9 +23,9 @@ def create_recipe(**params):
     return Recipe.objects.create(**defaults)
 
 
-def create_ingredient(name):
-    """Create a sample ingredient."""
-    return Ingredient.objects.create(name=name)
+def detail_url(recipe_id):
+    """Create and return a recipe detail URL."""
+    return reverse('recipe:recipe-detail', args=[recipe_id])
 
 
 class RecipeAPITests(TestCase):
@@ -76,7 +76,47 @@ class RecipeAPITests(TestCase):
         for k, v in payload.items():
             self.assertEqual(getattr(recipe, k), v)
 
-    def test_create_recipe_with_ingredient(self):
+    def test_partial_update_recipe(self):
+        """Test partial update of a recipe."""
+        original_name = 'Bread'
+        original_description = 'Flour and water'
+        recipe = Recipe.objects.create(name=original_name,
+                                       description=original_description)
+        payload = {'name': 'Pan'}
+        url = detail_url(recipe.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.name, payload['name'])
+        self.assertEqual(recipe.description, original_description)
+
+    def test_full_update_recipe(self):
+        """Test full update of a recipe."""
+        original_name = 'Bread'
+        original_description = 'Flour and water'
+        recipe = Recipe.objects.create(name=original_name,
+                                       description=original_description)
+        payload = {'name': 'Pan', 'description': 'Flour, water, and salt'}
+        url = detail_url(recipe.id)
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.name, payload['name'])
+        self.assertEqual(recipe.description, payload['description'])
+
+    def test_delete_recipe(self):
+        """Test deleting a recipe successful."""
+        recipe = create_recipe()
+
+        url = detail_url(recipe.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Recipe.objects.filter(id=recipe.id).exists())
+
+    def test_create_recipe_with_ingredients(self):
         """Test create a recipe with an ingredient."""
         payload = {
             'name': 'Delicious Soup',
@@ -86,18 +126,24 @@ class RecipeAPITests(TestCase):
         res = self.client.post(RECIPES_URL, payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        print(f"RES CONTAINS {res.data}")
+        self.assertEqual('Salt', res.data['ingredients'][0]['name'])
+        self.assertEqual('Water', res.data['ingredients'][1]['name'])
 
-    # def test_create_recipe_with_ingredients(self):
-    #     """Test create a recipe with ingredients."""
-    #     payload = {
-    #         'name': 'Soup',
-    #         'description': 'A most delicious soup',
-    #         'ingredients': [{'name': 'Water'}, {'name': 'Salt'}],
-    #     }
-    #     res = self.client.post(RECIPES_URL, payload)
-    #     check = self.client.get(INGREDIENTS_URL)
-    #     print(f"CHECK INGREDIENTS {check.data}")
-    #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-    #     print(f"RES CONTAINS ~~~~> {res.data}")
-    #     self.assertIn('Water', res.data['ingredients'].values())
+    def test_create_recipe_with_existing_ingredient(self):
+        """Test creating a recipe with existing ingredient."""
+        ingredient = Ingredient.objects.create(name='Pepper')
+        payload = {
+            'name': 'Pepper Sandwich',
+            'ingredients': [{'name': 'Pepper'}, {'name': 'Bread'}],
+        }
+        res = self.client.post(RECIPES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipes = Recipe.objects.all()
+        self.assertEqual(recipes.count(), 1)
+        recipe = recipes[0]
+        self.assertEqual(recipe.ingredients.count(), 2)
+        self.assertIn(ingredient, recipe.ingredients.all())
+        for ingredient in payload['ingredients']:
+            exists = recipe.ingredients.filter(name=ingredient['name']).exists()
+            self.assertTrue(exists)
