@@ -145,5 +145,6 @@ class RecipeAPITests(TestCase):
         self.assertEqual(recipe.ingredients.count(), 2)
         self.assertIn(ingredient, recipe.ingredients.all())
         for ingredient in payload['ingredients']:
-            exists = recipe.ingredients.filter(name=ingredient['name']).exists()
+            exists = recipe.ingredients.filter(
+                name=ingredient['name']).exists()
             self.assertTrue(exists)
