@@ -23,4 +23,4 @@ docker-compose>=2.10
 ### Run Server
 .. code-block:: bash
 
-    docker-compose up
+    docker-compose u
