@@ -31,11 +31,13 @@ class IngredientsAPITests(TestCase):
         Ingredient.objects.create(name='Water')
 
         res = self.client.get(INGREDIENTS_URL)
-
         ingredients = Ingredient.objects.all().order_by('-name')
-        serializer = IngredientSerializer(ingredients, many=True)
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data[0]['name'], ingredients.values()[0]['name'])
+        self.assertEqual(res.data[1]['name'], ingredients.values()[1]['name'])
+        self.assertEqual(res.data[0]['id'], ingredients.values()[0]['id'])
+        self.assertEqual(res.data[1]['id'], ingredients.values()[1]['id'])
 
     def test_update_ingredient(self):
         """Test updating an ingredient"""
