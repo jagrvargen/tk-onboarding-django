@@ -28,3 +28,4 @@ class ModelTests(TestCase):
 
         self.assertEqual(ingredient.name, ingredient_name)
         self.assertEqual(str(ingredient), ingredient_name)
+        self.assertEqual(recipe.name, recipe_name)
