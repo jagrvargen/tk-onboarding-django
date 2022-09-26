@@ -52,11 +52,13 @@ class IngredientsAPITests(TestCase):
         self.assertEqual(ingredient.name, payload['name'])
 
     def test_delete_ingredient(self):
-        ingredient = Ingredient.objects.create(name='Mayonnaise')
+        ingredient1 = Ingredient.objects.create(name='Mayonnaise')
+        Ingredient.objects.create(name='Aioli')
 
-        url = detail_url(ingredient.id)
+        url = detail_url(ingredient1.id)
         res = self.client.delete(url)
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         ingredients = Ingredient.objects.all()
-        self.assertFalse(ingredients.exists())
+        self.assertEqual(ingredients.filter(name='Mayonnaise').count(), 0)
+        self.assertIsNotNone(ingredients.get(name='Aioli'))
