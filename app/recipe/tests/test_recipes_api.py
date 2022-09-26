@@ -105,6 +105,17 @@ class RecipeAPITests(TestCase):
         self.assertEqual(recipe.name, payload['name'])
         self.assertEqual(recipe.description, payload['description'])
 
+    def test_update_non_existing_recipe(self):
+        """Test update a non-existing recipe returns 404."""
+        non_existing_recipe_id = 1
+        payload = {'name': 'Horchata', 'description': 'Water, sugar, rice'}
+        url = detail_url(non_existing_recipe_id)
+        res = self.client.put(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        recipes = Recipe.objects.all()
+        self.assertEqual(recipes.filter(name='Horchata').count(), 0)
+
     def test_delete_recipe(self):
         """Test deleting a recipe successful."""
         recipe = create_recipe()
@@ -116,7 +127,7 @@ class RecipeAPITests(TestCase):
         self.assertFalse(Recipe.objects.filter(id=recipe.id).exists())
 
     def test_delete_non_existing_recipe(self):
-        """Test deleting a non-existing recipe."""
+        """Test deleting a non-existing recipe returns 404."""
         non_existing_id = 1
 
         url = detail_url(non_existing_id)
