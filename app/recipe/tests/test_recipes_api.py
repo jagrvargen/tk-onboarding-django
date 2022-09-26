@@ -56,11 +56,10 @@ class RecipeAPITests(TestCase):
         create_recipe(**recipe2)
 
         res = self.client.get(RECIPES_URL, {'name': 'Sausage'})
-        recipe = Recipe.objects.filter(name='Sausage')
-        serializer = RecipeSerializer(recipe, many=True)
+        recipe = Recipe.objects.get(name='Sausage')
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data[0]['name'], recipe.name)
         self.assertNotIn('Sandwich', res.data)
 
     def test_create_recipe(self):
